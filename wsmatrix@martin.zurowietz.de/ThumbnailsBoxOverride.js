@@ -20,6 +20,15 @@ var ThumbnailsBoxOverride = class {
          'get_preferred_width',
       ];
       this.overrideOriginalProperties();
+
+      this._overviewShowingId =
+         Main.overview.connect('shown', () => {
+             Main.layoutManager.overviewGroup.set_child_above_sibling(Main.overview._overview, null);
+         });
+      this._overviewHidingId =
+         Main.overview.connect('hidden', () => {
+             Main.layoutManager.overviewGroup.set_child_above_sibling(Main.overview._overview, null);
+         });
    }
 
    destroy() {
@@ -209,7 +218,9 @@ var ThumbnailsBoxOverride = class {
       let indicatorLeftFullBorder = indicatorThemeNode.get_padding(St.Side.LEFT) + indicatorThemeNode.get_border_width(St.Side.LEFT);
       let indicatorRightFullBorder = indicatorThemeNode.get_padding(St.Side.RIGHT) + indicatorThemeNode.get_border_width(St.Side.RIGHT);
 
-      let y = box.y1;
+      let vertical_offset = (availY - this.getRows() * thumbnailHeight) / 2;
+
+      let y = box.y1 + vertical_offset;
 
       if (this._dropPlaceholderPos == -1) {
          Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
@@ -222,7 +233,7 @@ var ThumbnailsBoxOverride = class {
       for (let i = 0; i < this._thumbnails.length; i++) {
          let thumbnail = this._thumbnails[i];
 
-         y = box.y1 + (spacing + thumbnailHeight) * Math.floor(i / this.getColumns());
+         y = box.y1 + vertical_offset + (spacing + thumbnailHeight) * Math.floor(i / this.getColumns());
 
          let x1, x2;
          let currentColumn = (this._thumbnails.length - i - 1) % this.getColumns();
